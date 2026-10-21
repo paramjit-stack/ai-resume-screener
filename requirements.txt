@@ -1,8 +1,0 @@
-fastapi
-uvicorn[standard]
-python-multipart
-pymupdf
-pydantic-settings
-sentence-transformers
-streamlit
-requests
