@@ -4,8 +4,6 @@ from app.services.resume_parser import extract_resume_details
 from app.services.job_matcher import match_resume_to_job
 from app.services.consistency_checks import check_resume_consistency
 from app.rag.chunker import chunk_text
-from app.rag.retriever import retrieve_evidence
-from app.rag.semantic_retriever import retrieve_semantic_evidence
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from pathlib import Path
 import pymupdf
@@ -157,11 +155,16 @@ async def analyze_resume(
         overlap=20,
     )
 
-    evidence = retrieve_semantic_evidence(
-        query=query,
-        chunks=chunks,
-        top_k=5,
-    ) if candidate["skills"] else []
+    evidence = []
+
+    if candidate["skills"]:
+        from app.rag.semantic_retriever import retrieve_semantic_evidence
+
+        evidence = retrieve_semantic_evidence(
+            query=query,
+            chunks=chunks,
+            top_k=5,
+        )
 
     return {
         "candidate": candidate,

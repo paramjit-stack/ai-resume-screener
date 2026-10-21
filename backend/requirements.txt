@@ -1,8 +1,7 @@
+
 fastapi
-uvicorn[standard]
+uvicorn
 python-multipart
 pymupdf
 pydantic-settings
 sentence-transformers
-streamlit
-requests
