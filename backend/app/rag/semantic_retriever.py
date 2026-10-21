@@ -1,9 +1,16 @@
 
+from functools import lru_cache
+
 from sentence_transformers import SentenceTransformer, util
 
 
-# Load the model once and reuse it.
-model = SentenceTransformer("all-MiniLM-L6-v2")
+@lru_cache(maxsize=1)
+def get_model() -> SentenceTransformer:
+    """Load the semantic model once, when it is first needed."""
+    return SentenceTransformer(
+        "all-MiniLM-L6-v2",
+        device="cpu",
+    )
 
 
 def retrieve_semantic_evidence(
@@ -27,6 +34,9 @@ def retrieve_semantic_evidence(
     if not valid_chunks:
         return []
 
+    # Load the model only when semantic retrieval is needed.
+    model = get_model()
+
     # Convert the query and resume passages into vectors.
     query_embedding = model.encode(
         query,
@@ -48,7 +58,6 @@ def retrieve_semantic_evidence(
         chunk_embeddings,
     )[0]
 
-    # Return the highest-scoring chunks first.
     ranked_indices = similarities.argsort(
         descending=True
     )[:top_k]
