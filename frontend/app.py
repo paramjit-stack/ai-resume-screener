@@ -23,6 +23,12 @@ st.set_page_config(
 st.markdown(
     """
     <style>
+    /* Hide default Streamlit chrome without version-specific class names */
+    [data-testid="stHeader"], [data-testid="stToolbar"],
+    [data-testid="stDecoration"], [data-testid="stStatusWidget"],
+    #MainMenu, footer { display: none !important; }
+    [data-testid="stAppViewContainer"] { top: 0 !important; }
+    .block-container { padding-top: 1rem !important; }
     /* Main application */
     .stApp {
         background: linear-gradient(
@@ -234,41 +240,37 @@ st.markdown(
         ) !important;
     }
     
-    /* Section headings with SVG icons */
-    .section-heading {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin: 0 0 16px 0;
-    padding: 0;
-    color: #f1f5f9 !important;
-    font-family: inherit;
-    font-size: 1.25rem;
-    font-weight: 650;
-    line-height: 1.5;
-}
-
-.section-heading span {
-    color: #f1f5f9 !important;
-    background: transparent !important;
-}
-
-.section-heading svg {
-    width: 28px;
-    height: 28px;
-    flex-shrink: 0;
-}
-    /* Responsive columns */
-    @media (max-width: 700px) {
-        .block-container {
-            padding-left: 1rem;
-            padding-right: 1rem;
-        }
-
-        [data-testid="stMetric"] {
-            padding: 12px;
-        }
+    /* Unified icon/title alignment */
+    .section-heading { display:flex; align-items:center; gap:12px; margin:0 0 12px;
+        color:#f1f5f9; font-size:1.22rem; font-weight:650; line-height:1.35; }
+    .section-heading svg { width:24px; height:24px; flex:none; display:block; }
+    .section-icon { width:42px; height:42px; flex:none; display:flex;
+        align-items:center; justify-content:center; border-radius:11px; background:#252b51; }
+    .hero { display:flex; align-items:center; gap:16px; padding:22px 26px;
+        background:linear-gradient(105deg,#1b2947,#17213b); border:1px solid #394b68;
+        border-radius:16px; margin-bottom:24px; }
+    .hero-logo { width:54px; height:54px; flex:none; border-radius:13px;
+        background:linear-gradient(135deg,#6857e8,#477ff7); display:flex;
+        align-items:center; justify-content:center; font-size:27px; }
+    .hero h1 { margin:0 !important; padding:0 !important; font-size:1.65rem;
+        line-height:1.25; letter-spacing:-.025em; }
+    .hero p { margin:5px 0 0; color:#b8c5de !important; font-size:.91rem; }
+    .intro-title { font-size:1.35rem; font-weight:700; margin:0 0 5px; }
+    .intro-copy { color:#aebdd5 !important; margin:0 0 20px; }
+    [data-testid="stVerticalBlockBorderWrapper"] { height:100%; }
+    [data-testid="stFileUploader"] label { color:#e2e8f0 !important; }
+    @media(max-width:700px) { .hero {padding:16px;gap:12px;} .hero h1 {font-size:1.3rem;} }
+/* Responsive columns */
+@media (max-width: 700px) {
+    .block-container {
+        padding-left: 1rem;
+        padding-right: 1rem;
     }
+
+    [data-testid="stMetric"] {
+        padding: 12px;
+    }
+}
     </style>
     """,
     unsafe_allow_html=True,
@@ -320,26 +322,15 @@ TROPHY_ICON = """
 
 # HEADER
 
-st.title("AI Resume Screener")
-
-st.write(
-    "Screen resumes against a job description, rank candidates "
-    "by skill match, and review potential consistency issues."
-)
-
-
-# =========================================================
-# UPLOAD UI — TWO CARDS
-# =========================================================
-
-st.divider()
-
-st.subheader("Bulk Resume Screening")
-
-st.caption(
-    "Upload a job description and candidate resumes "
-    "to identify and rank the best matches."
-)
+st.markdown("""
+<div class="hero">
+  <div class="hero-logo">📄</div>
+  <div><h1>AI Resume Screener</h1>
+  <p>Discrepancy Engine · Bulk Scoring & Candidate Ranking</p></div>
+</div>
+<div class="intro-title">Bulk Resume Screening</div>
+<p class="intro-copy">Upload a job description and candidate resumes to identify and rank the best matches.</p>
+""", unsafe_allow_html=True)
 
 job_col, resume_col = st.columns(2, gap="large")
 
@@ -349,76 +340,36 @@ job_col, resume_col = st.columns(2, gap="large")
 
 with job_col:
     with st.container(border=True):
-        icon_col, title_col = st.columns([0.5, 9.5], gap="small")
-
-    with icon_col:
-        st.markdown(JOB_ICON, unsafe_allow_html=True)
-
-    with title_col:
-        st.markdown("#### Job Description")
-
-        st.caption("Upload the role requirements.")
-
-        job_pdf = st.file_uploader(
-            "Choose job description PDF",
-            type=["pdf"],
-            accept_multiple_files=False,
-            key="job_description_upload",
+        st.markdown(
+            f'<div class="section-heading"><span class="section-icon">{JOB_ICON}</span>'
+            '<span>Job Description</span></div>', unsafe_allow_html=True
         )
-
+        st.caption("Upload the role requirements.")
+        job_pdf = st.file_uploader(
+            "Choose job description PDF", type=["pdf"],
+            accept_multiple_files=False, key="job_description_upload",
+        )
         if job_pdf is not None:
             st.success(f"Ready: {job_pdf.name}")
-            st.caption(
-                f"File size: {len(job_pdf.getvalue()) / 1024:.1f} KB"
-            )
+            st.caption(f"File size: {len(job_pdf.getvalue()) / 1024:.1f} KB")
         else:
             st.caption("PDF format · One file")
 
-
-# ---------------------------------------------------------
-# CANDIDATE RESUMES CARD
-# ---------------------------------------------------------
-
 with resume_col:
     with st.container(border=True):
-          icon_col, title_col = st.columns([1, 9], gap="small")
-
-    with icon_col:
-        st.markdown(RESUME_ICON, unsafe_allow_html=True)
-
-    with title_col:
-        st.markdown("#### Candidate Resumes")
-
-        st.caption("Upload multiple candidate resumes.")
-
-        resume_pdfs = st.file_uploader(
-            "Choose resume PDFs",
-            type=["pdf"],
-            accept_multiple_files=True,
-            key="resume_bulk_upload",
+        st.markdown(
+            f'<div class="section-heading"><span class="section-icon">{RESUME_ICON}</span>'
+            '<span>Candidate Resumes</span></div>', unsafe_allow_html=True
         )
-
+        st.caption("Upload multiple candidate resumes.")
+        resume_pdfs = st.file_uploader(
+            "Choose resume PDFs", type=["pdf"],
+            accept_multiple_files=True, key="resume_bulk_upload",
+        )
         if resume_pdfs:
-            total_size = sum(
-                len(resume.getvalue())
-                for resume in resume_pdfs
-            )
-
-            st.success(
-                f"{len(resume_pdfs)} resume(s) selected"
-            )
-
-            with st.expander("View uploaded files"):
-                for resume in resume_pdfs:
-                    st.write(
-                        f"{resume.name} · "
-                        f"{len(resume.getvalue()) / 1024:.1f} KB"
-                    )
-
-            st.caption(
-                f"Total size: "
-                f"{total_size / (1024 * 1024):.2f} MB"
-            )
+            total_size = sum(len(resume.getvalue()) for resume in resume_pdfs)
+            st.success(f"{len(resume_pdfs)} resume(s) selected")
+            st.caption(f"Total size: {total_size / (1024 * 1024):.2f} MB")
         else:
             st.caption("PDF format · Multiple files supported")
 
@@ -676,14 +627,10 @@ if not isinstance(batch_results, dict):
 else:
     st.divider()
 
-    # Section heading with trophy icon
-    icon_col, title_col = st.columns([1, 9], gap="small")
-
-    with icon_col:
-        st.markdown(TROPHY_ICON, unsafe_allow_html=True)
-
-    with title_col:
-        st.markdown("#### Ranked Candidates")
+    st.markdown(
+        f'<div class="section-heading"><span class="section-icon">{TROPHY_ICON}</span>'
+        '<span>Ranked Candidates</span></div>', unsafe_allow_html=True
+    )
 
     total = batch_results.get("resumes_found", 0)
     screened = batch_results.get("resumes_screened", 0)
